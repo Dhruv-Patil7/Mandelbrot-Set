@@ -19,7 +19,7 @@ class MandelbrotSet{
     int WIDTH;
     const int MAX_ITR;
 
-    MandelbrotSet(int height, int width, int max_itr, int numThreads) : 
+    MandelbrotSet(int width, int height, int max_itr, int numThreads) : 
                   WIDTH(width), HEIGHT(height), MAX_ITR(max_itr), NUM_THREADS(numThreads){
         image.resize(WIDTH * HEIGHT);// Making the vector the size of total pixels.
     }
