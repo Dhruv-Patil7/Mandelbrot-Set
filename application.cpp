@@ -23,8 +23,8 @@ public:
         m_image.resize(sf::Vector2u{static_cast<unsigned int>(m_fractal.WIDTH),
                                     static_cast<unsigned int>(m_fractal.HEIGHT)});
         drawFractal();
-        m_texture.loadFromImage(m_image);
-        m_sprite.setTexture(m_texture);
+        static_cast<void>(m_texture.loadFromImage(m_image));
+        m_sprite.setTexture(m_texture, true);
 
         //Rectange that will be used to zoom in
         m_selectionRect.setFillColor(sf::Color(0, 0, 0, 0));
@@ -163,16 +163,16 @@ private:
     {
         m_COLOR = (m_COLOR % 3) + 1;
         drawFractal();
-        m_texture.loadFromImage(m_image);
-        m_sprite.setTexture(m_texture);
+        static_cast<void>(m_texture.loadFromImage(m_image));
+        m_sprite.setTexture(m_texture, true);
     }
 
     void resetZoomingButtonHandler()
     {
         m_fractal.defaultRegion();
         drawFractal();
-        m_texture.loadFromImage(m_image);
-        m_sprite.setTexture(m_texture);
+        static_cast<void>(m_texture.loadFromImage(m_image));
+        m_sprite.setTexture(m_texture, true);
     }
 
     void handleZoomingIn()
@@ -220,8 +220,8 @@ private:
 
         m_fractal.updateRegion(realMin, realMax, imagMin, imagMax);
         drawFractal();
-        m_texture.loadFromImage(m_image);
-        m_sprite.setTexture(m_texture);
+        static_cast<void>(m_texture.loadFromImage(m_image));
+        m_sprite.setTexture(m_texture, true);
     }
 
     void handleDragging()
@@ -281,8 +281,8 @@ private:
 
         m_fractal.updateRegion(newRealMin, newRealMax, newImagMin, newImagMax);
         drawFractal();
-        m_texture.loadFromImage(m_image);
-        m_sprite.setTexture(m_texture);
+        static_cast<void>(m_texture.loadFromImage(m_image));
+        m_sprite.setTexture(m_texture, true);
     }
 
     void createButton(int x, int y, sf::RectangleShape &button, sf::Text &text,
