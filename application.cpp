@@ -16,7 +16,6 @@ public:
                                               static_cast<unsigned int>(height)}),
                    "Mandelbrot Set", sf::Style::Titlebar | sf::Style::Close),
           m_sprite(m_texture),
-          m_changeColorButtonText(m_font),
           m_resetZoomingButtonText(m_font)
     {
         //Setting the SMFL Image and texture
@@ -36,8 +35,6 @@ public:
         {
             std::cout << "Please, provide a Font!\n";
         }
-        createButton(width - 150, 5, m_changeColorButton, m_changeColorButtonText,
-                     "Change color");
         createButton(width - 150, 50, m_resetZoomingButton,
                      m_resetZoomingButtonText, "Reset Zooming");
     }
@@ -60,8 +57,6 @@ public:
             {
                 m_window.draw(m_selectionRect);
             }
-            m_window.draw(m_changeColorButton);
-            m_window.draw(m_changeColorButtonText);
             m_window.draw(m_resetZoomingButton);
             m_window.draw(m_resetZoomingButtonText);
 
@@ -90,15 +85,19 @@ private:
     {
         if (iter < m_fractal.MAX_ITR)
         {
-            double t = iter / m_fractal.MAX_ITR;
+            constexpr double PALETTE_REPEAT = 3.0;
+            double t = iter / m_fractal.MAX_ITR * PALETTE_REPEAT;
+            t = t - std::floor(t);// Calculating t to get number between 0 - 1
             double position = t * (palette.size() - 1);
-            int left = floor(position);
+            //finding the color the pixel will lie between
+            int left = std::floor(position);
             int right = std::min(left + 1, (int)palette.size() - 1);
             
             double fraction = position - left;
             sf::Color c1 = palette[left];
             sf::Color c2 = palette[right];
 
+            // Calculating the RGB values for color scheme
             double r = c1.r * (1 - fraction) + c2.r * fraction;
             double g = c1.g * (1 - fraction) + c2.g * fraction;
             double b = c1.b * (1 - fraction) + c2.b * fraction;
@@ -117,11 +116,7 @@ private:
                 const sf::Vector2f mousePosition{
                     static_cast<float>(mouseButtonPressed->position.x),
                     static_cast<float>(mouseButtonPressed->position.y)};
-                if (m_changeColorButton.getGlobalBounds().contains(mousePosition))
-                {
-                    changeColorButtonHandler();
-                }
-                else if (m_resetZoomingButton.getGlobalBounds().contains(mousePosition))
+                if (m_resetZoomingButton.getGlobalBounds().contains(mousePosition))
                 {
                     resetZoomingButtonHandler();
                 }
@@ -159,14 +154,6 @@ private:
                                 mouseWheelScrolled->position.y);
             }
         }
-    }
-
-    void changeColorButtonHandler()
-    {
-        m_COLOR = (m_COLOR % 3) + 1;
-        drawFractal();
-        static_cast<void>(m_texture.loadFromImage(m_image));
-        m_sprite.setTexture(m_texture, true);
     }
 
     void resetZoomingButtonHandler()
@@ -315,21 +302,29 @@ private:
     sf::Vector2i m_end;
     sf::RectangleShape m_selectionRect;
 
-    sf::RectangleShape m_changeColorButton;
     sf::RectangleShape m_resetZoomingButton;
     sf::Font m_font;
-    sf::Text m_changeColorButtonText{m_font};
     sf::Text m_resetZoomingButtonText{m_font};
     std::vector<sf::Color> palette = {
-    sf::Color(0, 7, 100),
-    sf::Color(32,107,203),
-    sf::Color(237,255,255),
-    sf::Color(255,170,0),
-    sf::Color(0,2,0)
+        sf::Color(0,   7,   100),   // Deep Blue
+        sf::Color(12,  44,  138),
+        sf::Color(24,  82,  177),
+        sf::Color(57,  125, 209),
+        sf::Color(134, 181, 229),
+        sf::Color(211, 236, 248),
+        sf::Color(241, 250, 255),   // Almost White
+        sf::Color(255, 255, 255),   // White
+        sf::Color(255, 238, 170),
+        sf::Color(255, 215, 85),
+        sf::Color(255, 170, 0),
+        sf::Color(230, 135, 0),
+        sf::Color(190, 95,  0),
+        sf::Color(140, 70,  0),
+        sf::Color(90,  40,  0),
+        sf::Color(0,   7,   100)    // Loop back to Deep Blue
     };
 
     constexpr static const double EPS = 1e-10;
-    int m_COLOR = 1; // Color palette identifier (1, 2, or 3)
     bool m_dragging =
         false; // Flag to indicate if the user is dragging for selection
 };

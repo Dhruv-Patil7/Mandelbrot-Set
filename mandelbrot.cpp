@@ -76,6 +76,7 @@ class MandelbrotSet{
                 if(itr == MAX_ITR) image[y * WIDTH + x] = MAX_ITR;
                 else {
                     double magnitude = std::abs(z);
+                    // Converting to double for more precise control on color
                     double smooth = itr + 1 - (std::log(std::log(magnitude)) / std::log(2.0));
 
                     image[y * WIDTH + x] = smooth;
