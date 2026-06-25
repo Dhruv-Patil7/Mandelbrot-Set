@@ -5,7 +5,7 @@
 #include <thread>
 #include <vector>
 
-enum class FractalType {
+enum class FractalType {// To switch between Julia and Mandelbrot
     Mandelbrot,
     Julia
 };
@@ -35,7 +35,7 @@ class MandelbrotSet{
 
         m_currentJuliaPreset = preset;
 
-        switch (preset)
+        switch (preset)// Switch based in key pressed
         {
             case 1:
                 m_juliaC = {-0.8, 0.156};
