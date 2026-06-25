@@ -85,12 +85,28 @@ private:
         std::ostringstream renderStream;
         renderStream << std::fixed << std::setprecision(2)
              << m_renderTime;
-        m_hudText.setString(
-            "Mandelbrot\n"
-            "Zoom       : " + zoomStream.str() + 'x' +
+       
+        std::string fractalName =
+            (m_fractal.getFractalType() == FractalType::Mandelbrot)
+                ? "Mandelbrot"
+                : "Julia";
+
+        std::string hud =
+            fractalName +
+            "\nZoom       : " + zoomStream.str() + "x";
+
+        if (m_fractal.getFractalType() == FractalType::Julia)
+        {
+            hud += "\nPreset     : " +
+                std::to_string(m_fractal.getJuliaPreset());
+        }
+        // Putting Fun element in HUD
+        hud +=
             "\nIterations : " + std::to_string(m_fractal.MAX_ITR) +
             "\nThreads    : " + std::to_string(std::thread::hardware_concurrency()) +
-            "\nRender Time: " + renderStream.str() + "ms");
+            "\nRender Time: " + renderStream.str() + "ms";
+
+        m_hudText.setString(hud);
 
         sf::FloatRect bounds = m_hudText.getLocalBounds();
 
@@ -184,6 +200,69 @@ private:
         if (m_dragging)
         {
             handleDragging();
+            return;
+        }
+
+        if (const auto *keyPressed = event.getIf<sf::Event::KeyPressed>())
+        {
+            // Toggle Mandelbrot / Julia
+            if (keyPressed->code == sf::Keyboard::Key::J)
+            {
+                if (m_fractal.getFractalType() == FractalType::Mandelbrot){
+                    m_fractal.setFractalType(FractalType::Julia);
+                    m_window.setTitle("Julia Set");// Updating the name accordingly
+                }
+                else{
+                    m_fractal.setFractalType(FractalType::Mandelbrot);
+                    m_window.setTitle("Mandelbrot Set");
+                }
+
+                m_fractal.defaultRegion();
+                m_zoom = 1.0;
+
+                drawFractal();
+                static_cast<void>(m_texture.loadFromImage(m_image));
+                m_sprite.setTexture(m_texture, true);
+
+                updateHUD();
+            }
+
+            // Julia presets
+            if (m_fractal.getFractalType() == FractalType::Julia)
+            {
+                switch (keyPressed->code)
+                {
+                case sf::Keyboard::Key::Num1:
+                    m_fractal.setJuliaPreset(1);
+                    break;
+
+                case sf::Keyboard::Key::Num2:
+                    m_fractal.setJuliaPreset(2);
+                    break;
+
+                case sf::Keyboard::Key::Num3:
+                    m_fractal.setJuliaPreset(3);
+                    break;
+
+                case sf::Keyboard::Key::Num4:
+                    m_fractal.setJuliaPreset(4);
+                    break;
+
+                case sf::Keyboard::Key::Num5:
+                    m_fractal.setJuliaPreset(5);
+                    break;
+
+                default:
+                    return;
+                }
+
+                drawFractal();
+                static_cast<void>(m_texture.loadFromImage(m_image));
+                m_sprite.setTexture(m_texture, true);
+
+                updateHUD();
+            }
+
             return;
         }
 
