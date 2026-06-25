@@ -77,7 +77,7 @@ private:
         {
             for (int x = 0; x < m_fractal.WIDTH; ++x)
             {
-                int iter = m_fractal.image[y * m_fractal.WIDTH + x];
+                double iter = m_fractal.image[y * m_fractal.WIDTH + x];
                 sf::Color color = getColor(iter);
                 m_image.setPixel(sf::Vector2u{static_cast<unsigned int>(x),
                                               static_cast<unsigned int>(y)},
@@ -86,22 +86,24 @@ private:
         }
     }
 
-    sf::Color getColor(int iter)
+    sf::Color getColor(double iter)
     {
         if (iter < m_fractal.MAX_ITR)
         {
-            switch (m_COLOR)
-            {
-            case 1:
-                return sf::Color(0, 255 * iter / m_fractal.MAX_ITR,
-                                 255 * iter / m_fractal.MAX_ITR);
-            case 2:
-                return sf::Color(255 * iter / m_fractal.MAX_ITR, 0,
-                                 255 * iter / m_fractal.MAX_ITR);
-            case 3:
-                return sf::Color(255 * iter / m_fractal.MAX_ITR,
-                                 255 * iter / m_fractal.MAX_ITR, 0);
-            }
+            double t = iter / m_fractal.MAX_ITR;
+            double position = t * (palette.size() - 1);
+            int left = floor(position);
+            int right = std::min(left + 1, (int)palette.size() - 1);
+            
+            double fraction = position - left;
+            sf::Color c1 = palette[left];
+            sf::Color c2 = palette[right];
+
+            double r = c1.r * (1 - fraction) + c2.r * fraction;
+            double g = c1.g * (1 - fraction) + c2.g * fraction;
+            double b = c1.b * (1 - fraction) + c2.b * fraction;
+
+            return sf::Color(r, g, b);
         }
         return sf::Color::Black;
     }
@@ -318,6 +320,13 @@ private:
     sf::Font m_font;
     sf::Text m_changeColorButtonText{m_font};
     sf::Text m_resetZoomingButtonText{m_font};
+    std::vector<sf::Color> palette = {
+    sf::Color(0, 7, 100),
+    sf::Color(32,107,203),
+    sf::Color(237,255,255),
+    sf::Color(255,170,0),
+    sf::Color(0,2,0)
+    };
 
     constexpr static const double EPS = 1e-10;
     int m_COLOR = 1; // Color palette identifier (1, 2, or 3)
