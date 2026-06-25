@@ -4,11 +4,10 @@
 #include <mutex>
 #include <thread>
 #include <vector>
-using namespace std;
 
 class MandelbrotSet{
   public:
-    vector<int> image;
+    std::vector<double> image;
     //Setting the size of graph
     double REAL_MIN = -2;
     double REAL_MAX = 2;
@@ -26,8 +25,8 @@ class MandelbrotSet{
     
     //renders fractal using multiplethreading
     void renderFract(){
-        vector<thread> threads;
-        NUM_THREADS = thread::hardware_concurrency();
+        std::vector<std::thread> threads;
+        NUM_THREADS = std::thread::hardware_concurrency();
         if(NUM_THREADS == 0) NUM_THREADS = 4; // Fallback
 
         int rowsPerThread = HEIGHT / NUM_THREADS;
@@ -35,7 +34,7 @@ class MandelbrotSet{
         for (int i = 0; i < NUM_THREADS; i++) {
             int startRow = i * rowsPerThread;
             int endRow = (i == NUM_THREADS - 1) ? HEIGHT : startRow + rowsPerThread;
-            threads.push_back(thread(&MandelbrotSet::renderFractPart, this, startRow, endRow));
+            threads.push_back(std::thread(&MandelbrotSet::renderFractPart, this, startRow, endRow));
         }
 
         for (auto& t : threads) {
@@ -66,16 +65,21 @@ class MandelbrotSet{
             for(int x = 0; x < WIDTH; x++){
                 double realP = REAL_MIN + (REAL_MAX - REAL_MIN) * x / WIDTH;
                 double imagP = IMAGE_MIN + (IMAGE_MAX - IMAGE_MIN) * y / HEIGHT;
-                complex<double> c(realP, imagP);//Calculating the value of C.
-                complex<double> z = 0;
+                std::complex<double> c(realP, imagP);//Calculating the value of C.
+                std::complex<double> z = 0;
                 int itr = 0;
                 //Calculating the number of iteration for each pixels.
-                while(norm(z) <= 4.0 && itr < MAX_ITR){
+                while(std::norm(z) <= 4.0 && itr < MAX_ITR){
                     z = z * z + c;
                     itr++;
                 }
-                //Storing the number of iteration.
-                image[y * WIDTH + x] = itr;
+                if(itr == MAX_ITR) image[y * WIDTH + x] = MAX_ITR;
+                else {
+                    double magnitude = std::abs(z);
+                    double smooth = itr + 1 - (std::log(std::log(magnitude)) / std::log(2.0));
+
+                    image[y * WIDTH + x] = smooth;
+                }
             }
         }
     }
