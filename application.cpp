@@ -1,3 +1,6 @@
+#include <iomanip>
+#include <chrono>
+#include <sstream>
 #include <SFML/Graphics.hpp>
 #include <complex>
 #include <fstream>
@@ -33,10 +36,18 @@ public:
         //Load Font
         if (!m_font.openFromFile("TimesNewRoman.ttf"))
         {
-            std::cout << "Please, provide a Font!\n";
+            std::cout << "Find yourself a font Human!\n";
         }
-        createButton(width - 150, 50, m_resetZoomingButton,
-                     m_resetZoomingButtonText, "Reset Zooming");
+        m_hudText.setFont(m_font);
+        m_hudText.setCharacterSize(16);
+        m_hudText.setFillColor(sf::Color(230, 230, 230));
+        m_hudText.setPosition(sf::Vector2f(15.f, 15.f));
+        m_hudBackground.setFillColor(sf::Color(0,0,0,170));
+        updateHUD();
+        createButton(width - 150, 50,
+             m_resetZoomingButton,
+             m_resetZoomingButtonText,
+             "Reset Zooming");
     }
 
     void run()
@@ -53,6 +64,8 @@ public:
                 handleEvent(*event);
             }
             m_window.draw(m_sprite);
+            m_window.draw(m_hudBackground);
+            m_window.draw(m_hudText);
             if (m_dragging)
             {
                 m_window.draw(m_selectionRect);
@@ -65,20 +78,48 @@ public:
     }
 
 private:
+    void updateHUD()
+    {
+        std::ostringstream zoomStream;
+        zoomStream << std::fixed << std::setprecision(2) << m_zoom;
+        std::ostringstream renderStream;
+        renderStream << std::fixed << std::setprecision(2)
+             << m_renderTime;
+        m_hudText.setString(
+            "Mandelbrot\n"
+            "Zoom       : " + zoomStream.str() + 'x' +
+            "\nIterations : " + std::to_string(m_fractal.MAX_ITR) +
+            "\nThreads    : " + std::to_string(std::thread::hardware_concurrency()) +
+            "\nRender Time: " + renderStream.str() + "ms");
+
+        sf::FloatRect bounds = m_hudText.getLocalBounds();
+
+        m_hudBackground.setPosition(
+            m_hudText.getPosition() - sf::Vector2f(8.f, 8.f));
+
+        m_hudBackground.setSize(
+            sf::Vector2f(bounds.size.x + 16.f,
+                        bounds.size.y + 16.f));
+    }
     void drawFractal()
     {
+        auto start = std::chrono::high_resolution_clock::now();
+
         m_fractal.renderFract();
         for (int y = 0; y < m_fractal.HEIGHT; ++y)
         {
             for (int x = 0; x < m_fractal.WIDTH; ++x)
             {
                 double iter = m_fractal.image[y * m_fractal.WIDTH + x];
-                sf::Color color = getColor(iter);
+                sf::Color color = getColor(iter);// Gets No. of iters for each pixels
                 m_image.setPixel(sf::Vector2u{static_cast<unsigned int>(x),
                                               static_cast<unsigned int>(y)},
                                  color);
             }
         }
+        auto end = std::chrono::high_resolution_clock::now();
+
+    m_renderTime = std::chrono::duration<double, std::milli>(end - start).count();
     }
 
     sf::Color getColor(double iter)
@@ -159,6 +200,9 @@ private:
     void resetZoomingButtonHandler()
     {
         m_fractal.defaultRegion();
+        m_zoom = 1.0;
+        updateHUD();
+
         drawFractal();
         static_cast<void>(m_texture.loadFromImage(m_image));
         m_sprite.setTexture(m_texture, true);
@@ -207,7 +251,12 @@ private:
         // removing the rectange
         m_selectionRect.setSize(sf::Vector2f(0, 0));
 
+        double old = m_fractal.REAL_MAX - m_fractal.REAL_MIN;
+        double neew = realMax - realMin;
+        m_zoom *= old / neew;
         m_fractal.updateRegion(realMin, realMax, imagMin, imagMax);
+        updateHUD();
+
         drawFractal();
         static_cast<void>(m_texture.loadFromImage(m_image));
         m_sprite.setTexture(m_texture, true);
@@ -249,6 +298,8 @@ private:
     {
         // Calculate zoom factor
         double zoomFactor = (delta > 0) ? 0.9 : 1.1;
+        m_zoom /= zoomFactor;
+        updateHUD();
 
         // Calculate the new complex plane coordinates based on mouse position
         double mouseRe =
@@ -304,6 +355,8 @@ private:
 
     sf::RectangleShape m_resetZoomingButton;
     sf::Font m_font;
+    sf::RectangleShape m_hudBackground;
+    sf::Text m_hudText{m_font};
     sf::Text m_resetZoomingButtonText{m_font};
     std::vector<sf::Color> palette = {
         sf::Color(0,   7,   100),   // Deep Blue
@@ -325,6 +378,7 @@ private:
     };
 
     constexpr static const double EPS = 1e-10;
-    bool m_dragging =
-        false; // Flag to indicate if the user is dragging for selection
+    bool m_dragging = false; // Flag to indicate if the user is dragging for selection
+    double m_zoom = 1.0; // Initially set to zero
+    double m_renderTime = 0.0;
 };

@@ -10,8 +10,8 @@
 
 int main() {
   // The ratio must be 4:3
-  int width = 600;
-  int height = 450;
+  int width = 1024;
+  int height = 768;
   int maxIter = 500;
   int numThreads = std::thread::
       hardware_concurrency();  // Number of threads for multithreading
