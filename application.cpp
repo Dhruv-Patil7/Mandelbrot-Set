@@ -85,7 +85,7 @@ private:
     {
         if (iter < m_fractal.MAX_ITR)
         {
-            constexpr double PALETTE_REPEAT = 3.0;
+            constexpr double PALETTE_REPEAT = 6.0;
             double t = iter / m_fractal.MAX_ITR * PALETTE_REPEAT;
             t = t - std::floor(t);// Calculating t to get number between 0 - 1
             double position = t * (palette.size() - 1);
