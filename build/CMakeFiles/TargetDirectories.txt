@@ -1,0 +1,3 @@
+X:/Repos/Mandelbrot Set/build/CMakeFiles/MandelbrotGPU.dir
+X:/Repos/Mandelbrot Set/build/CMakeFiles/edit_cache.dir
+X:/Repos/Mandelbrot Set/build/CMakeFiles/rebuild_cache.dir

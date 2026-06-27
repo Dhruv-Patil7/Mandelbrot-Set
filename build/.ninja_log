@@ -1,0 +1,10 @@
+# ninja log v7
+33	200	8042870435381174	CMakeFiles/MandelbrotGPU.dir/external/glad/src/glad.c.obj	8cac2b97070df93
+27	366	8042870435381174	CMakeFiles/MandelbrotGPU.dir/src/main.cpp.obj	f084b083a71fa9f4
+366	483	8042870438693912	MandelbrotGPU.exe	a758649370f6d923
+42	470	8042875519740391	CMakeFiles/MandelbrotGPU.dir/src/main.cpp.obj	f084b083a71fa9f4
+471	700	8042875524028015	MandelbrotGPU.exe	a758649370f6d923
+57	579	8042876766258092	CMakeFiles/MandelbrotGPU.dir/src/main.cpp.obj	f084b083a71fa9f4
+579	722	8042876771483417	MandelbrotGPU.exe	a758649370f6d923
+38	417	8042878723616753	CMakeFiles/MandelbrotGPU.dir/src/main.cpp.obj	f084b083a71fa9f4
+418	546	8042878727401252	MandelbrotGPU.exe	a758649370f6d923

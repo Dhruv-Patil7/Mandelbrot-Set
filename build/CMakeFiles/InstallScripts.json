@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"X:/Repos/Mandelbrot Set/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
