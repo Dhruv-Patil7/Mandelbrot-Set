@@ -1,4 +1,4 @@
-# Mandelbrot Set Renderer (CPU)
+ # Mandelbrot Set Renderer (CPU)
 
 A C++ implementation of the Mandelbrot Set featuring multithreaded rendering, interactive exploration, and smooth user controls. This project focuses on efficient CPU-based fractal generation and serves as the foundation for a future GPU/OpenGL implementation.
 
@@ -50,4 +50,4 @@ The renderer utilizes multiple CPU threads to compute the Mandelbrot set in para
 - Custom color palettes
 - Performance benchmarking
 
-Main Branch contains the GPU integration...
+OpenGL-Integration Branch contains the GPU integration...
