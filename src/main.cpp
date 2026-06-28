@@ -5,6 +5,18 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+float centerX = -0.75f;
+float centerY = 0.0f;
+float zoom = 10.0f;
+
+void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    if (yoffset > 0)
+        zoom *= 1.1f;
+    else if (yoffset < 0)
+        zoom /= 1.1f;
+}
+
 std::string ReadFile(const std::string& path)
 {
     std::ifstream file(path);
@@ -111,6 +123,7 @@ int main()
     }
 
     glfwMakeContextCurrent(window);
+    glfwSetScrollCallback(window, ScrollCallback);
 
     // Load OpenGL (GLAD 2)
     int version = gladLoadGL(glfwGetProcAddress);
@@ -123,6 +136,12 @@ int main()
         return -1;
     }
     GLuint shaderProgram = CreateShaderProgram();
+
+    GLint centerLoc = glGetUniformLocation(shaderProgram, "center");
+    GLint zoomLoc = glGetUniformLocation(shaderProgram, "zoom");
+    GLint resolutionLoc = glGetUniformLocation(shaderProgram, "resolution");
+    GLint iterationLoc = glGetUniformLocation(shaderProgram, "maxIterations");
+
     float vertices[] = {
     -1.0f,-1.0f,
      1.0f,-1.0f,
@@ -166,15 +185,22 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
-        glViewport(0, 0, 1280, 720);
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+
+        glViewport(0, 0, width, height);
 
         glClearColor(0.05f, 0.05f, 0.08f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
 
-        glBindVertexArray(VAO);
+        glUniform2f(centerLoc, centerX, centerY);
+        glUniform2f(resolutionLoc, (float)width, (float)height);
+        glUniform1i(iterationLoc, 500);
+        glUniform1f(zoomLoc, zoom);
 
+        glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glfwSwapBuffers(window);
