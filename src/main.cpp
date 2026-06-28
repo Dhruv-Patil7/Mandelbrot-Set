@@ -4,17 +4,65 @@
 #include <string>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <cmath>
 
-float centerX = -0.75f;
-float centerY = 0.0f;
-float zoom = 10.0f;
+// Setting initial values 
+double centerX = -0.75;
+double centerY = 0.0;
+double zoom = 1.0;
+bool dragging = false;
+
+double lastMouseX = 0.0;
+double lastMouseY = 0.0;
+
+void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            dragging = true;
+
+            glfwGetCursorPos(window,
+                             &lastMouseX,
+                             &lastMouseY);
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            dragging = false;
+        }
+    }
+}
 
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
+    double mouseX, mouseY;
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+
+    double u = mouseX / width;
+    double v = mouseY / height;
+
+    // View size BEFORE zoom
+    double aspect = (double)width / height;
+
+    double oldHeight = 3.0 / zoom;
+    double oldWidth = oldHeight * aspect;
+
+    // Change zoom
     if (yoffset > 0)
-        zoom *= 1.1f;
+        zoom *= 1.1;
     else if (yoffset < 0)
-        zoom /= 1.1f;
+        zoom /= 1.1;
+
+    double newHeight = 3.0 / zoom;
+    double newWidth = newHeight * aspect;
+
+    // Shift camera so the point under the mouse stays fixed
+    centerX += (u - 0.5) * (oldWidth - newWidth);
+    centerY -= (v - 0.5) * (oldHeight - newHeight);
 }
 
 std::string ReadFile(const std::string& path)
@@ -107,7 +155,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    // Create Window
+    // Creating Window
     GLFWwindow* window = glfwCreateWindow(
         1280,
         720,
@@ -124,9 +172,11 @@ int main()
 
     glfwMakeContextCurrent(window);
     glfwSetScrollCallback(window, ScrollCallback);
+    glfwSetMouseButtonCallback(window, MouseButtonCallback);
 
-    // Load OpenGL (GLAD 2)
+    // Load OpenGL
     int version = gladLoadGL(glfwGetProcAddress);
+
 
     if (version == 0)
     {
@@ -182,7 +232,7 @@ int main()
     std::cout << "OpenGL : "
               << glGetString(GL_VERSION)
               << '\n';
-
+    // render loop
     while (!glfwWindowShouldClose(window))
     {
         int width, height;
@@ -192,13 +242,43 @@ int main()
 
         glClearColor(0.05f, 0.05f, 0.08f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        //if for panning around
+        if (dragging)
+        {
+            double mouseX, mouseY;
+
+            glfwGetCursorPos(window, &mouseX, &mouseY);
+
+            double dx = mouseX - lastMouseX;
+            double dy = mouseY - lastMouseY;
+
+            double aspect = (double)width / height;
+
+            double viewHeight = 3.0 / zoom;
+            double viewWidth  = viewHeight * aspect;
+
+            centerX -= dx * viewWidth / width;
+            centerY += dy * viewHeight / height;
+
+            lastMouseX = mouseX;
+            lastMouseY = mouseY;
+        }
 
         glUseProgram(shaderProgram);
 
-        glUniform2f(centerLoc, centerX, centerY);
+        int iterations = std::min(
+            1000,
+            std::max(
+                500,
+                static_cast<int>(500 + 40 * std::log2(zoom))
+            )
+        );
+
+
+        glUniform2d(centerLoc, centerX, centerY);
         glUniform2f(resolutionLoc, (float)width, (float)height);
-        glUniform1i(iterationLoc, 500);
-        glUniform1f(zoomLoc, zoom);
+        glUniform1i(iterationLoc, iterations);
+        glUniform1d(zoomLoc, zoom);
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
